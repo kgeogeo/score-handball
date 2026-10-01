@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Score Handball a déménagé</title>
+<meta name="robots" content="noindex">
+<script>
+  // Redirige vers la nouvelle adresse en emportant le match en cours (enregistré sur cet appareil).
+  var NEW = 'https://score-handball.github.io';
+  var rest = location.pathname.replace(/^\/score-handball\/?/, '/');
+  var target = NEW + rest + location.search;
+  try {
+    var saved = localStorage.getItem('hb-score-v1');
+    if (saved) target += '#import=' + encodeURIComponent(saved);
+  } catch (e) {}
+  // Supprime l'ancienne version hors ligne de Score Handball (et seulement elle), puis redirige.
+  (navigator.serviceWorker ? navigator.serviceWorker.getRegistrations() : Promise.resolve([]))
+    .then(function (rs) {
+      return Promise.all(rs.filter(function (r) { return r.scope.indexOf('/score-handball/') !== -1; })
+        .map(function (r) { return r.unregister(); }));
+    })
+    .then(function () {
+      return window.caches ? caches.keys().then(function (ks) {
+        return Promise.all(ks.filter(function (k) { return k.indexOf('hb-score-') === 0; })
+          .map(function (k) { return caches.delete(k); }));
+      }) : null;
+    })
+    .catch(function () {})
+    .then(function () { location.replace(target); });
+</script>
+<style>
+  body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: #050708; color: #f5f5f5; font: 15px/1.5 system-ui, sans-serif; text-align: center; padding: 16px; box-sizing: border-box; }
+  a { color: #ffd400; font-weight: 700; }
+</style>
+</head>
+<body>
+  <p>Score Handball a déménagé.<br>Redirection vers <a href="https://score-handball.github.io/">score-handball.github.io</a>…</p>
+</body>
+</html>
